@@ -7,7 +7,7 @@ import { useCustomSearchParams } from "../../hooks/useCustomSearchParams";
 import { useMobxStore } from "../../store/store";
 
 const ProductPage = () => {
-  const [params] = useCustomSearchParams();
+  const [params, setParams] = useCustomSearchParams();
   const { id } = useParams();
   const { product } = useMobxStore();
 
@@ -18,6 +18,10 @@ const ProductPage = () => {
     product.setSize(id);
   };
 
+  const onColorChange = (id) => {
+    setParams({ color: id });
+  };
+
   useEffect(() => {
     product.fetchItem(id);
   }, [id]);
@@ -25,6 +29,7 @@ const ProductPage = () => {
   useEffect(() => {
     if (params?.color) {
       product.setColor(params.color);
+      product.setSize(null);
     }
   }, [params?.color]);
 
@@ -47,11 +52,25 @@ const ProductPage = () => {
         <Typography>Цвет: {activeProductWithColor?.name}</Typography>
         <Typography color={"green"}>Цена: {activeProductWithColor?.price}</Typography>
         <Box>
+          {!!activeProduct.colors &&
+            activeProduct.colors.map((sz) => {
+              const isActive = product.color === sz.id;
+              return (
+                <Button
+                  onClick={() => onColorChange(sz.id)}
+                  variant="contained"
+                  color={isActive ? "success" : "primary"}
+                  key={sz.id}>
+                  {sz.name}
+                </Button>
+              );
+            })}
+        </Box>
+        <Box>
           {!!product.sizes &&
             product.sizes.map((sz) => {
               const disabled = !activeProductWithColor.sizes.includes(sz.id);
               const isActive = product.size === sz.id;
-              console.log(product.size?.id, product.size === sz.id);
               return (
                 <Button
                   onClick={() => onSizeChange(sz.id)}
