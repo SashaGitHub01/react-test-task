@@ -1,30 +1,20 @@
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router";
 import { STATUSES } from "../../constants";
 import { useCustomSearchParams } from "../../hooks/useCustomSearchParams";
 import { useMobxStore } from "../../store/store";
+import Images from "./Images/Images";
+import Sizes from "./Sizes/Sizes";
 
 const ProductPage = () => {
-  const [activeImg, setActiveImg] = useState(0);
   const [params, setParams] = useCustomSearchParams();
   const { id } = useParams();
   const { product } = useMobxStore();
 
   const activeProduct = product?.product;
   const activeProductWithColor = product?.itemWithColor;
-  const prImages = activeProductWithColor?.images;
-
-  const activeSrc = useMemo(() => {
-    if (activeProductWithColor) {
-      return prImages.find((_, i) => i === activeImg);
-    }
-  }, [activeImg, activeProductWithColor?.id]);
-  console.log(activeSrc, activeImg);
-  const onSizeChange = (id) => {
-    product.setSize(id);
-  };
 
   const onColorChange = (id) => {
     setParams({ color: id });
@@ -51,17 +41,7 @@ const ProductPage = () => {
 
   return (
     <div className={"product"}>
-      <div className={"images"}>
-        <div className="image--main">
-          <img src={activeSrc} alt="e" />
-        </div>
-        <div className="images_row">
-          {prImages?.map((img, i) => {
-            if (i == activeImg) return null;
-            return <img onClick={() => setActiveImg(i)} key={img} src={img} alt="e" />;
-          })}
-        </div>
-      </div>
+      <Images activeProductWithColor={activeProductWithColor} />
       <div className={"info"}>
         <Typography variant="h3">{activeProduct.name}</Typography>
         <Typography>Цвет: {activeProductWithColor?.name}</Typography>
@@ -82,23 +62,7 @@ const ProductPage = () => {
               );
             })}
         </Box>
-        <Box>
-          {!!product.sizes &&
-            product.sizes.map((sz) => {
-              const disabled = !activeProductWithColor.sizes.includes(sz.id);
-              const isActive = product.size === sz.id;
-              return (
-                <Button
-                  onClick={() => onSizeChange(sz.id)}
-                  variant="contained"
-                  color={isActive ? "success" : "primary"}
-                  key={sz.id}
-                  disabled={disabled}>
-                  {sz.label} - {sz.number}
-                </Button>
-              );
-            })}
-        </Box>
+        <Sizes activeProductWithColor={activeProductWithColor} />
       </div>
     </div>
   );
