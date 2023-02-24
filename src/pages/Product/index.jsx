@@ -1,19 +1,27 @@
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import { STATUSES } from "../../constants";
 import { useCustomSearchParams } from "../../hooks/useCustomSearchParams";
 import { useMobxStore } from "../../store/store";
 
 const ProductPage = () => {
+  const [activeImg, setActiveImg] = useState(0);
   const [params, setParams] = useCustomSearchParams();
   const { id } = useParams();
   const { product } = useMobxStore();
 
   const activeProduct = product?.product;
   const activeProductWithColor = product?.itemWithColor;
+  const prImages = activeProductWithColor?.images;
 
+  const activeSrc = useMemo(() => {
+    if (activeProductWithColor) {
+      return prImages.find((_, i) => i === activeImg);
+    }
+  }, [activeImg, activeProductWithColor?.id]);
+  console.log(activeSrc, activeImg);
   const onSizeChange = (id) => {
     product.setSize(id);
   };
@@ -44,13 +52,21 @@ const ProductPage = () => {
   return (
     <div className={"product"}>
       <div className={"images"}>
-        <div className="image--main"></div>
-        <div className="images_row"></div>
+        <div className="image--main">
+          <img src={activeSrc} alt="e" />
+        </div>
+        <div className="images_row">
+          {prImages?.map((img, i) => {
+            if (i == activeImg) return null;
+            return <img onClick={() => setActiveImg(i)} key={img} src={img} alt="e" />;
+          })}
+        </div>
       </div>
       <div className={"info"}>
         <Typography variant="h3">{activeProduct.name}</Typography>
         <Typography>Цвет: {activeProductWithColor?.name}</Typography>
         <Typography color={"green"}>Цена: {activeProductWithColor?.price}</Typography>
+        <Typography color={"gray"}>{activeProductWithColor?.description}</Typography>
         <Box>
           {!!activeProduct.colors &&
             activeProduct.colors.map((sz) => {
